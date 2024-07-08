@@ -2,12 +2,15 @@ import initKnex from "knex";
 import configuration from "../knexfile.js";
 const knex = initKnex(configuration);
 
-export async function getAllEmployees() {
+export async function getAllEmployees(limit, offset) {
   try {
-    return await knex("employees").select("*");
+    return await knex("employees")
+      .select("id", "first_name", "last_name", "company_email")
+      .limit(limit)
+      .offset(offset);
   } catch (error) {
     console.error("Error fetching all employees:", error);
-    throw error;
+    return false;
   }
 }
 
@@ -16,7 +19,7 @@ export async function getSingleEmployee(id) {
     return await knex("employees").where({ id }).first();
   } catch (error) {
     console.error(`Error fetching employee with id ${id}:`, error);
-    throw error;
+    return false;
   }
 }
 
@@ -28,7 +31,7 @@ export async function createSingleEmployee(employeeData) {
     return newEmployee;
   } catch (error) {
     console.error("Error creating employee:", error);
-    throw error;
+    return false;
   }
 }
 
@@ -41,6 +44,6 @@ export async function updateSingleEmployee(id, employeeData) {
     return updatedEmployee;
   } catch (error) {
     console.error(`Error updating employee with id ${id}:`, error);
-    throw error;
+    return false;
   }
 }

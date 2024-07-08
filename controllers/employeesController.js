@@ -1,3 +1,4 @@
+import "dotenv/config.js";
 import {
   getAllEmployees,
   getSingleEmployee,
@@ -7,9 +8,33 @@ import {
 
 //get/api/employees
 const getEmployees = async (req, res) => {
+  const { page = 1, limit = 5 } = req.query;
+  const offset = (page - 1) * limit;
+
   try {
-    const employees = await getAllEmployees();
-    res.json(employees);
+    const employees = await getAllEmployees(Number(limit), Number(offset));
+
+    const PORT = process.env.PORT;
+    const BACKEND_URL = process.env.BACKEND_URL;
+
+    const baseUrl = `${BACKEND_URL}:${PORT}/api/employees`;
+    const nextPage =
+      employees.length < limit
+        ? null
+        : `${baseUrl}?page=${Number(page) + 1}&limit=${limit}`;
+    const prevPage =
+      page > 1 ? `${baseUrl}?page=${Number(page) - 1}&limit=${limit}` : null;
+
+    res.json({
+      status: "success",
+      message: "Employees fetched successfully",
+      currentPage: Number(page),
+      totalPages: employees.length < limit ? Number(page) : Number(page) + 1,
+      limit: Number(limit),
+      employees,
+      nextPage,
+      prevPage,
+    });
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch employees" });
   }
@@ -54,4 +79,4 @@ const updateEmployee = async (req, res) => {
   }
 };
 
-export default { getEmployees, getEmployee, createEmployee, updateEmployee };
+export { getEmployees, getEmployee, createEmployee, updateEmployee };
