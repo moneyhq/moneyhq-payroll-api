@@ -1,13 +1,20 @@
 import initKnex from "knex";
 import configuration from "../knexfile.js";
+import { validateEmployeeData } from "../utilities/employeeValidation.js";
 const knex = initKnex(configuration);
 
 export async function getAllEmployees(limit, offset) {
   try {
-    return await knex("employees")
-      .select("id", "first_name", "last_name", "company_email")
-      .limit(limit)
-      .offset(offset);
+    return await knex("employees").select("*").limit(limit).offset(offset);
+  } catch (error) {
+    console.error("Error fetching all employees:", error);
+    return false;
+  }
+}
+
+export async function getAllEmployee() {
+  try {
+    return await knex("employees").select("*");
   } catch (error) {
     console.error("Error fetching all employees:", error);
     return false;
@@ -24,14 +31,33 @@ export async function getSingleEmployee(id) {
 }
 
 export async function createSingleEmployee(employeeData) {
+  const validationErrors = validateEmployeeData(employeeData);
+
+  if (validationErrors.length > 0) {
+    console.error("Validation error:", validationErrors);
+    return { success: false, message: validationErrors.join(", ") };
+  }
+
+  const cleanedEmployeeData = {
+    ...employeeData,
+    date_of_birth: employeeData.date_of_birth || null,
+    exit_date: employeeData.exit_date || null,
+  };
+
   try {
-    const [newEmployee] = await knex("employees")
-      .insert(employeeData)
-      .returning(["id", "name", "email"]);
-    return newEmployee;
+    await knex("employees").insert(cleanedEmployeeData);
+
+    const newEmployee = await knex("employees")
+      .where({
+        first_name: cleanedEmployeeData.first_name,
+        last_name: cleanedEmployeeData.last_name,
+        join_date: cleanedEmployeeData.join_date,
+      })
+      .first();
+    return { success: true, data: newEmployee };
   } catch (error) {
     console.error("Error creating employee:", error);
-    return false;
+    return { success: false, message: "Error creating employee", error };
   }
 }
 

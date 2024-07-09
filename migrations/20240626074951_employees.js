@@ -7,21 +7,23 @@ export function up(knex) {
     table.increments("id").primary();
     table.string("first_name", 255).notNullable();
     table.string("last_name", 255).notNullable();
-    table.date("date_of_birth").notNullable();
-    table.string("company_email", 255).notNullable().unique();
+    table.date("date_of_birth");
+    table.string("company_email", 255).unique();
     table.string("personal_email", 255).unique();
-    table.string("phone_number", 20).notNullable();
-    table.string("address", 255).notNullable();
-    table.date("hire_date").notNullable();
-    table.decimal("salary", 15, 2).notNullable();
-    table.string("bank_name", 255).notNullable();
-    table.string("bank_account_number", 50).notNullable();
-    table.string("bank_sort_code", 20).notNullable();
-    table.string("BVN", 11).notNullable();
-    table.string("tax_id", 50).notNullable();
-    table.string("pension_id", 50).notNullable();
-    table.integer("current_state_id").unsigned().notNullable();
-    table.integer("current_pfa").unsigned().notNullable();
+    table.string("phone_number", 20);
+    table.string("address", 255);
+    table.date("join_date").notNullable();
+    table.date("exit_date").defaultTo(null);
+    table.string("status").notNullable().defaultTo("active");
+    table.decimal("gross_monthly_salary", 15, 2).notNullable();
+    table.string("bank_name", 255);
+    table.string("bank_account_number", 50);
+    table.string("bank_sort_code", 20);
+    table.string("BVN", 11);
+    table.string("tax_id", 50);
+    table.string("pension_id", 50);
+    table.integer("current_state_id").unsigned();
+    table.integer("current_pfa").unsigned();
     table.timestamp("created_at").defaultTo(knex.fn.now());
     table
       .timestamp("updated_at")

@@ -4,6 +4,7 @@ import {
   getSingleEmployee,
   createSingleEmployee,
   updateSingleEmployee,
+  getAllEmployee,
 } from "../models/employeesModel.js";
 
 //get/api/employees
@@ -12,6 +13,8 @@ const getEmployees = async (req, res) => {
   const offset = (page - 1) * limit;
 
   try {
+    const allEmployees = await getAllEmployee();
+
     const employees = await getAllEmployees(Number(limit), Number(offset));
 
     const PORT = process.env.PORT;
@@ -28,6 +31,7 @@ const getEmployees = async (req, res) => {
     res.json({
       status: "success",
       message: "Employees fetched successfully",
+      total: allEmployees.length,
       currentPage: Number(page),
       totalPages: employees.length < limit ? Number(page) : Number(page) + 1,
       limit: Number(limit),
@@ -58,8 +62,13 @@ const getEmployee = async (req, res) => {
 //post/api/employees/
 const createEmployee = async (req, res) => {
   try {
-    const newEmployee = await createSingleEmployee(req.body);
-    res.status(201).json(newEmployee);
+    const result = await createSingleEmployee(req.body);
+
+    if (result.success) {
+      res.status(201).json(result.data);
+    } else {
+      res.status(400).json({ error: result.message });
+    }
   } catch (error) {
     res.status(500).json({ error: "Failed to create employee" });
   }
